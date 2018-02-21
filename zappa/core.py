@@ -512,7 +512,11 @@ class Zappa(object):
             if minify:
                 # Related: https://github.com/Miserlou/Zappa/issues/744
                 excludes = ZIP_EXCLUDES + exclude + [split_venv[-1]]
-                copytree(cwd, temp_project_path, metadata=False, symlinks=False, ignore=shutil.ignore_patterns(*excludes))
+                def ignore_func(src, names):
+                    return {name for name in names for patt in excludes
+                            if glob.fnmatch.fnmatch(name, patt)
+                            or glob.fnmatch.fnmatch(os.path.join(src, name), patt)}
+                copytree(cwd, temp_project_path, metadata=False, symlinks=False, ignore=ignore_func)
             else:
                 copytree(cwd, temp_project_path, metadata=False, symlinks=False)
 
